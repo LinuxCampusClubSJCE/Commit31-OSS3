@@ -171,8 +171,5 @@ npm start
 
 The backend will start at: `http://localhost:5000`
 
-```
-
-**Would you like me to help you set up the specific logic for the `itemModel.js` or the `authMiddleware.js` next?**
 
 ```
