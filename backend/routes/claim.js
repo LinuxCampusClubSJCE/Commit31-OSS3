@@ -6,16 +6,16 @@ const {
   getItemClaims,
   updateClaimStatus,
 } = require("../controllers/claimController");
-const authMiddleware = require("../middlewares/authMiddleware");
+const {protect} = require("../middlewares/authMiddleware");
 
 // POST /api/claims
-router.post("/claims", authMiddleware, createClaim);
+router.post("/claims", protect, createClaim);
 
 // GET /api/items/:id/claims
-router.get("/items/:id/claims", authMiddleware, getItemClaims);
+router.get("/items/:id/claims", protect, getItemClaims);
 
 // PATCH /api/claims/:id/status
-router.patch("/claims/:id/status", authMiddleware, updateClaimStatus);
+router.patch("/claims/:id/status", protect, updateClaimStatus);
 
 module.exports = router;
 

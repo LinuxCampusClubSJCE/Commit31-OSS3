@@ -7,7 +7,7 @@ const { registerUser, loginUser } = require("../controllers/authController");
 
 // Import Middlewares & Validators
 const validateRequest = require("../middlewares/validateRequest");
-const { registerValidator, loginValidator } = require("../middlewares/authValidator"); // Assuming your validators are here
+const { registerValidator, loginValidator } = require("../validators/authValidator"); // Assuming your validators are here
 
 /** * Rate limiter for login to prevent brute-force attacks
  */

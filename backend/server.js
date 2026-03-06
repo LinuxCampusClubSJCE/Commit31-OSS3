@@ -40,6 +40,7 @@ app.use(express.urlencoded({ extended: true }));
 const authRoutes = require("./routes/auth");
 const userRoutes = require("./routes/user");
 const claimRoutes = require("./routes/claim");
+const itemRoutes = require("./routes/item");
 
 app.get("/", (req, res) => {
   res.send("Backend running successfully 🚀");
@@ -48,6 +49,7 @@ app.get("/", (req, res) => {
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api", claimRoutes);
+app.use("/api/items", itemRoutes);
 
 /* ---------------- SERVER START ---------------- */
 
