@@ -1,61 +1,78 @@
-# Backend API Documentation
+# Backend API Documentation: Commit31 Lost and Found
 
-This directory contains the backend codebase for the **Commit31 Lost and Found** platform, built with Node.js, Express, and MongoDB.
+This directory contains the backend codebase for the **Commit31 Lost and Found** platform, built with **Node.js**, **Express**, and **MongoDB**. It features a robust MVC architecture, JWT-based authentication, and integrated security middleware.
 
-## Folder Structure
+---
+
+## 📂 Folder Structure
+
+The backend follows a standard **Model–View–Controller (MVC)** architecture to ensure scalability and clean separation of concerns.
 
 ```text
 backend/
-├── config/
-│   └── db.js              # MongoDB connection setup
-├── controllers/
-│   ├── authController.js  # Registration and login logic with JWT
-│   └── userController.js  # User profile operations (placeholder)
-├── middlewares/
-│   └── authMiddleware.js  # JWT token verification (protect middleware)
-├── models/
-│   ├── userModel.js       # User schema (with bcrypt password hashing)
-│   ├── itemModel.js       # Lost/Found item schema
-│   ├── claimModel.js      # Item claim/verification schema
-│   └── messageModel.js    # User-to-user messaging schema
-├── routes/
-│   ├── auth.js            # Auth routes (/api/auth)
-│   └── user.js            # User routes (/api/users) — protected
-├── utils/
-│   └── generateToken.js   # JWT token generation utility
-├── .env                   # Environment variables (JWT_SECRET, JWT_EXPIRE)
-├── package.json
-└── server.js              # Entry point and server configuration
+├── config/           # Configuration files
+│   └── db.js         # MongoDB connection setup
+├── controllers/      # Route handlers (Business logic)
+│   ├── authController.js # Registration and login logic with JWT
+│   └── userController.js # User profile operations
+├── middlewares/      # Custom Express middlewares
+│   ├── authMiddleware.js # JWT token verification (protect middleware)
+│   └── security.js      # Rate limiting and security configs
+├── models/           # Mongoose schemas (Database collections)
+│   ├── userModel.js      # User schema (with bcrypt password hashing)
+│   ├── itemModel.js      # Lost/Found item schema
+│   ├── claimModel.js     # Item claim/verification schema
+│   └── messageModel.js   # User-to-user messaging schema
+├── routes/           # API route definitions mapping URLs to controllers
+│   ├── auth.js           # Authentication routes (/api/auth)
+│   └── user.js           # User routes (/api/users) — protected
+├── utils/            # Helper functions
+│   └── generateToken.js  # JWT token generation utility
+├── .env              # Environment variables (Secrets & Config)
+├── package.json      # Project dependencies and scripts
+└── server.js         # Application entry point and server configuration
+
 ```
+
+---
 
 ## Getting Started
 
 ### Prerequisites
-- Node.js installed
-- MongoDB running locally or a MongoDB Atlas URI
+
+Make sure the following tools are installed:
+
+* **Node.js** (v14 or higher)
+* **MongoDB** (Local instance or MongoDB Atlas)
 
 ### Installation
-1. Navigate to the backend directory:
-   ```bash
-   cd backend
-   ```
-2. Install dependencies:
-   ```bash
-   npm install
-   ```
-3. Create a `.env` file and configure:
-   ```env
-   JWT_SECRET=your_secret_key
-   JWT_EXPIRE=7d
-   MONGO_URI=mongodb://127.0.0.1:27017/uni_find   # optional, defaults to this
-   ```
 
-### Running the Server
+1. **Navigate to the backend directory:**
 ```bash
-npm run dev     # Development mode (nodemon)
-npm start       # Production mode
+cd backend
+
 ```
-The server runs on `http://localhost:5000` by default.
+
+
+2. **Install dependencies:**
+```bash
+npm install
+
+```
+
+
+3. **Configure Environment Variables:**
+Create a `.env` file in the `backend/` directory and add the following:
+```env
+PORT=5000
+MONGO_URI=mongodb://127.0.0.1:27017/uni_find
+JWT_SECRET=your_super_secret_key
+JWT_EXPIRE=7d
+CORS_ORIGIN=http://localhost:3000
+
+```
+
+
 
 ---
 
@@ -112,42 +129,86 @@ The server runs on `http://localhost:5000` by default.
 
 ---
 
-### 2. User Routes
-**Base URL:** `/api/users`
+## 🛣️ API Routes
+
+### 1. Authentication Routes (`/api/auth`)
+
+| Method | Endpoint | Description |
+| --- | --- | --- |
+| `POST` | `/register` | Registers a new user and returns a JWT. |
+| `POST` | `/login` | Authenticates user and returns a JWT. |
+
+**Register User Request Body:**
+
+```json
+{
+  "name": "John Doe",
+  "email": "john@example.com",
+  "password": "securepassword123",
+  "role": "student",
+  "contactNumber": "9876543210"
+}
+
+```
+
+> `role` defaults to `student`. `role` and `contactNumber` are optional.
+
+---
+
+### 2. User Routes (`/api/users`)
+
+*Requires `Authorization: Bearer <token>` header.*
 
 #### Get Current User Profile
-- **Endpoint:** `GET /me`
-- **Description:** Protected route — requires a valid JWT token.
-- **Headers:** `Authorization: Bearer <token>`
-- **Response (200 OK):**
-  ```json
-  {
-    "_id": "...",
-    "name": "John Doe",
-    "email": "john@example.com",
-    "role": "student",
-    "contactNumber": "1234567890",
-  }
-  ```
+
+* **Endpoint:** `GET /me`
+* **Description:** Retrieves the authenticated user's profile information.
+* **Response (200 OK):** Returns the user object (excluding the password).
 
 ---
 
-## Authentication Flow
+## 🔑 Authentication Flow
 
-1. **Register** or **Login** to receive a JWT token.
-2. Include the token in the `Authorization` header for protected routes:
-   ```text
-    Authorization: Bearer <your_token>
-    ```
-3. The `protect` middleware verifies the token and grants access to the route.
+1. **Register/Login:** User sends credentials and receives a **JWT**.
+2. **Authorization Header:** Include the token in all protected requests:
+```text
+Authorization: Bearer <your_token>
+
+```
+
+
+3. **Verification:** The `protect` middleware verifies the token before granting access to specific route controllers.
 
 ---
 
-## Database Schemas
+## 📊 Database Schemas
 
 | Collection | Description |
-|---|---|
-| **User** | Student accounts with name, email, password (hashed), role, and contact number |
-| **Item** | Lost/found item reports with category, location, date, and status tracking |
-| **Claim** | Verification requests linking a claimer to an item with proof description |
-| **Message** | Direct messages between users, optionally linked to a specific item |
+| --- | --- |
+| **User** | Accounts with name, email, hashed password, role, and contact info. |
+| **Item** | Lost/Found item reports with category, location, and status tracking. |
+| **Claim** | Verification requests linking a claimer to a found item with proof. |
+| **Message** | Direct messages between users, optionally linked to a specific item. |
+
+---
+
+## 🏃 Running the Server
+
+Start the server in development mode (using nodemon):
+
+```bash
+npm run dev
+
+```
+
+Run in production mode:
+
+```bash
+npm start
+
+```
+
+The backend will start at: `http://localhost:5000`
+
+
+```
