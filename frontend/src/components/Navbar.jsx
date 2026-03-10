@@ -1,8 +1,12 @@
 import { useState, useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import useAuth from "../context/useAuth";
 
 export default function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const { user, isAuthenticated, logout } = useAuth();
+  const navigate = useNavigate();
 
   useEffect(() => {
     const handle = () => setScrolled(window.scrollY > 10);
@@ -11,21 +15,23 @@ export default function Navbar() {
   }, []);
 
   const links = [
-    { label: "Login", href: "/login" },
-    { label: "Register", href: "/register" },
     { label: "About", href: "#about" },
     { label: "How It Works", href: "#how-it-works" },
   ];
 
+  const handleLogout = () => {
+    logout();
+    navigate("/login");
+  };
+
   return (
     <nav
-      className={`fixed top-0 left-0 right-0 z-50 bg-yellow-300 border-b-4 border-black transition-all duration-200 ${
-        scrolled ? "shadow-[0_4px_0px_0px_#000]" : ""
-      }`}
+      className={`fixed top-0 left-0 right-0 z-50 bg-yellow-300 border-b-4 border-black transition-all duration-200 ${scrolled ? "shadow-[0_4px_0px_0px_#000]" : ""
+        }`}
     >
       <div className="max-w-6xl mx-auto px-6 py-3 flex items-center justify-between">
         {/* Logo */}
-        <a href="/" className="flex items-center gap-2 group">
+        <Link to="/" className="flex items-center gap-2 group">
           <div className="w-9 h-9 bg-black rounded-none flex items-center justify-center border-2 border-black group-hover:bg-green-400 transition-colors">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3">
               <circle cx="11" cy="11" r="8" />
@@ -35,34 +41,71 @@ export default function Navbar() {
           <span className="text-2xl font-black tracking-tight text-black uppercase" style={{ fontFamily: "'Space Mono', monospace" }}>
             Uni<span className="bg-black text-yellow-300 px-1">Find</span>
           </span>
-        </a>
+        </Link>
 
         {/* Desktop Links */}
-        <div className="hidden md:flex items-center gap-3">
-          {links.map((l) => (
+        <div className="hidden  md:flex items-center gap-14">
+          <div className="flex items-center gap-3">
+            {links.map((l) => (
+              <Link
+                key={l.label}
+                to={l.href}
+                className="text-sm font-black uppercase text-black border-2 border-black px-4 py-2 hover:bg-black hover:text-yellow-300 transition-colors"
+                style={{ fontFamily: "'Space Mono', monospace" }}
+              >
+                {l.label}
+              </Link>
+            ))}
             <a
-              key={l.label}
-              href={l.href}
-              className="text-sm font-black uppercase text-black border-2 border-black px-4 py-2 hover:bg-black hover:text-yellow-300 transition-colors"
+              href="#report"
+              className="text-sm font-black uppercase text-black border-2 border-black px-4 py-2 bg-white hover:bg-black hover:text-white transition-colors shadow-[3px_3px_0px_#000] hover:shadow-none hover:translate-x-[3px] hover:translate-y-[3px]"
               style={{ fontFamily: "'Space Mono', monospace" }}
             >
-              {l.label}
+              Lost Item
             </a>
-          ))}
-          <a
-            href="#report"
-            className="text-sm font-black uppercase text-black border-2 border-black px-4 py-2 bg-white hover:bg-black hover:text-white transition-colors shadow-[3px_3px_0px_#000] hover:shadow-none hover:translate-x-[3px] hover:translate-y-[3px]"
-            style={{ fontFamily: "'Space Mono', monospace" }}
-          >
-            Lost Item
-          </a>
-          <a
-            href="#report"
-            className="text-sm font-black uppercase text-black border-2 border-black px-4 py-2 bg-green-400 hover:bg-black hover:text-green-400 transition-colors shadow-[3px_3px_0px_#000] hover:shadow-none hover:translate-x-[3px] hover:translate-y-[3px]"
-            style={{ fontFamily: "'Space Mono', monospace" }}
-          >
-            Found Item
-          </a>
+            <a
+              href="#report"
+              className="text-sm font-black uppercase text-black border-2 border-black px-4 py-2 bg-green-400 hover:bg-black hover:text-green-400 transition-colors shadow-[3px_3px_0px_#000] hover:shadow-none hover:translate-x-[3px] hover:translate-y-[3px]"
+              style={{ fontFamily: "'Space Mono', monospace" }}
+            >
+              Found Item
+            </a>
+          </div>
+          {/* Auth Buttons — Conditional */}
+          {isAuthenticated ? (
+            <div className="flex items-center gap-2">
+              <span
+                className="text-sm font-black uppercase text-black border-2 border-black px-4 py-2 bg-yellow-100"
+                style={{ fontFamily: "'Space Mono', monospace" }}
+              >
+                👋 {user?.name || user?.email}
+              </span>
+              <button
+                onClick={handleLogout}
+                className="text-sm font-black uppercase border-2 border-black px-4 py-2 bg-red-500 text-white hover:bg-black hover:text-red-400 transition-colors shadow-[3px_3px_0px_#000] hover:shadow-none hover:translate-x-[3px] hover:translate-y-[3px] cursor-pointer"
+                style={{ fontFamily: "'Space Mono', monospace" }}
+              >
+                Logout
+              </button>
+            </div>
+          ) : (
+            <div className="flex items-center gap-2">
+              <Link
+                to="/login"
+                className="text-sm font-black uppercase text-black border-2 border-black px-4 py-2 bg-white hover:bg-black hover:text-white transition-colors shadow-[3px_3px_0px_#000] hover:shadow-none hover:translate-x-[3px] hover:translate-y-[3px]"
+                style={{ fontFamily: "'Space Mono', monospace" }}
+              >
+                Login
+              </Link>
+              <Link
+                to="/register"
+                className="text-sm font-black uppercase text-white border-2 border-black px-4 py-2 bg-black hover:bg-green-400 hover:text-black transition-colors shadow-[3px_3px_0px_#000] hover:shadow-none hover:translate-x-[3px] hover:translate-y-[3px]"
+                style={{ fontFamily: "'Space Mono', monospace" }}
+              >
+                Register
+              </Link>
+            </div>
+          )}
         </div>
 
         {/* Hamburger */}
@@ -78,7 +121,7 @@ export default function Navbar() {
       </div>
 
       {/* Mobile Menu */}
-      <div className={`md:hidden overflow-hidden transition-all duration-200 ${menuOpen ? "max-h-80" : "max-h-0"}`}>
+      <div className={`md:hidden overflow-hidden transition-all duration-200 ${menuOpen ? "max-h-96" : "max-h-0"}`}>
         <div className="border-t-4 border-black flex flex-col bg-yellow-300">
           {links.map((l) => (
             <a
@@ -94,9 +137,47 @@ export default function Navbar() {
           <a href="#report" onClick={() => setMenuOpen(false)} className="text-sm font-black uppercase text-black border-b-2 border-black px-6 py-4 bg-white hover:bg-black hover:text-white transition-colors" style={{ fontFamily: "'Space Mono', monospace" }}>
             Report Lost Item
           </a>
-          <a href="#report" onClick={() => setMenuOpen(false)} className="text-sm font-black uppercase text-black px-6 py-4 bg-green-400 hover:bg-black hover:text-green-400 transition-colors" style={{ fontFamily: "'Space Mono', monospace" }}>
+          <a href="#report" onClick={() => setMenuOpen(false)} className="text-sm font-black uppercase text-black border-b-2 border-black px-6 py-4 bg-green-400 hover:bg-black hover:text-green-400 transition-colors" style={{ fontFamily: "'Space Mono', monospace" }}>
             Report Found Item
           </a>
+
+          {/* Mobile Auth Buttons */}
+          {isAuthenticated ? (
+            <>
+              <span
+                className="text-sm font-black uppercase text-black border-b-2 border-black px-6 py-4 bg-yellow-100"
+                style={{ fontFamily: "'Space Mono', monospace" }}
+              >
+                👋 {user?.name || user?.email}
+              </span>
+              <button
+                onClick={() => { handleLogout(); setMenuOpen(false); }}
+                className="text-sm font-black uppercase text-white px-6 py-4 bg-red-500 hover:bg-black hover:text-red-400 transition-colors text-left cursor-pointer"
+                style={{ fontFamily: "'Space Mono', monospace" }}
+              >
+                Logout
+              </button>
+            </>
+          ) : (
+            <>
+              <Link
+                to="/login"
+                onClick={() => setMenuOpen(false)}
+                className="text-sm font-black uppercase text-black border-b-2 border-black px-6 py-4 bg-white hover:bg-black hover:text-white transition-colors"
+                style={{ fontFamily: "'Space Mono', monospace" }}
+              >
+                Login
+              </Link>
+              <Link
+                to="/register"
+                onClick={() => setMenuOpen(false)}
+                className="text-sm font-black uppercase text-white px-6 py-4 bg-black hover:bg-green-400 hover:text-black transition-colors"
+                style={{ fontFamily: "'Space Mono', monospace" }}
+              >
+                Register
+              </Link>
+            </>
+          )}
         </div>
       </div>
     </nav>

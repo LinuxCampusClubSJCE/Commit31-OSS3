@@ -1,13 +1,11 @@
 import axios from "axios";
 
 const rawBaseUrl = import.meta.env.VITE_API_URL;
-
 if (!rawBaseUrl) {
   throw new Error("Missing VITE_API_URL");
 }
 
 const BASE_URL = rawBaseUrl.replace(/\/+$/, "");
-
 /**
  * Default token provider (fallback to localStorage)
  */

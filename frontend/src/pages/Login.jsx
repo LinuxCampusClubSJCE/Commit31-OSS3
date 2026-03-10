@@ -1,6 +1,7 @@
 import { useState } from "react";
 import {  useNavigate } from "react-router-dom";
 import  useAuth  from "../context/useAuth";
+import api from "../api/client";
 
 function Login() {
   
@@ -11,12 +12,13 @@ function Login() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setError("");
     const formData = new FormData(e.target);
     const data = {
       email: formData.get("email"),
       password: formData.get("password"),
     };
-    
+
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   
       // Client validation
@@ -32,29 +34,18 @@ function Login() {
     
     setisLoading(true);
 
-
     try {
-      const res = await fetch("/api/auth/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-      });
+      const result = await api.post("/api/auth/login", data);
 
-      const result = await res.json();
-
-      if (!res.ok) {
-        setError(result.error || "Invalid email or password");
-        return;
-      }
-
-      if (result.user && result.token) {
-        login(result.user, result.token);
+      if (result.token) {
+        const user = { _id: result._id, email: result.email, role: result.role };
+        login(user, result.token);
         navigate("/"); 
       } else {
         setError("Invalid server response");
       }
     } catch (err) {
-      if(err)  setError("Something went wrong. Please try again.");
+      setError(err.message || "Something went wrong. Please try again.");
     }
     finally {
       setisLoading(false);

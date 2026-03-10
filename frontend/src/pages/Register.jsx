@@ -1,6 +1,7 @@
 import { useState } from "react";
 import {  useNavigate } from "react-router-dom";
 import  useAuth  from "../context/useAuth";
+import api from "../api/client";
 
 function Register() {
   
@@ -11,6 +12,7 @@ function Register() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setError("");
     const formData = new FormData(e.target);
     const data = {
       name: formData.get("name"),
@@ -27,21 +29,11 @@ function Register() {
     setisLoading(true);
 
     try {
-      const res = await fetch("/api/auth/register", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-      });
+      const result = await api.post("/api/auth/register", data);
 
-      const result = await res.json();
-
-      if (!res.ok) {
-        setError(result.error || "Registration failed");
-        return;
-      }
-
-      if (result.user && result.token) {
-        login(result.user, result.token);
+      if (result.token) {
+        const user = { _id: result._id, name: data.name, email: result.email, role: result.role };
+        login(user, result.token);
         navigate("/"); 
       } else {
         navigate("/login", {
@@ -49,7 +41,7 @@ function Register() {
         });
       }
     } catch (err) {
-      if(err)  setError("Something went wrong. Please try again.");
+      setError(err.message || "Something went wrong. Please try again.");
     }
     finally {
       setisLoading(false);
