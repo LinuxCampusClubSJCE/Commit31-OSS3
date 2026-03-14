@@ -66,6 +66,10 @@ const api = {
     return apiClient.put(endpoint, body, config);
   },
 
+  patch(endpoint, body, config = {}) {
+    return apiClient.patch(endpoint, body, config);
+  },
+
   delete(endpoint, config = {}) {
     return apiClient.delete(endpoint, config);
   },

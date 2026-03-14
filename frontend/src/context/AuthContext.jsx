@@ -2,22 +2,23 @@ import { createContext, useState, useEffect } from "react";
 
 const AuthContext = createContext();
 
+// Read from localStorage synchronously to avoid the flash-redirect on reload
+const getSavedToken = () => localStorage.getItem("token");
+const getSavedUser = () => {
+  try {
+    const saved = localStorage.getItem("user");
+    return saved ? JSON.parse(saved) : null;
+  } catch {
+    return null;
+  }
+};
+
 export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null);
-  const [token, setToken] = useState(null);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-
-  // Run when app starts
-  useEffect(() => {
-    const savedToken = localStorage.getItem("token");
-    const savedUser = localStorage.getItem("user");
-
-    if (savedToken && savedUser) {
-      setToken(savedToken);
-      setUser(JSON.parse(savedUser));
-      setIsAuthenticated(true);
-    }
-  }, []);
+  const [user, setUser] = useState(getSavedUser);
+  const [token, setToken] = useState(getSavedToken);
+  const [isAuthenticated, setIsAuthenticated] = useState(
+    () => !!(getSavedToken() && getSavedUser())
+  );
 
   const login = (userData, tokenValue) => {
     setUser(userData);
@@ -59,6 +60,12 @@ export const AuthProvider = ({ children }) => {
     });
   };
 
+  const updateUser = (updatedData) => {
+    const newUser = { ...user, ...updatedData };
+    setUser(newUser);
+    localStorage.setItem("user", JSON.stringify(newUser));
+  };
+
   return (
     <AuthContext.Provider
       value={{
@@ -67,6 +74,7 @@ export const AuthProvider = ({ children }) => {
         isAuthenticated,
         login,
         logout,
+        updateUser,
         authFetch,
       }}
     >

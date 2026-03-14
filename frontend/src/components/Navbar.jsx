@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { FaUserCircle } from "react-icons/fa";
 import useAuth from "../context/useAuth";
 
 export default function Navbar() {
@@ -74,12 +75,13 @@ export default function Navbar() {
           {/* Auth Buttons — Conditional */}
           {isAuthenticated ? (
             <div className="flex items-center gap-2">
-              <span
-                className="text-sm font-black uppercase text-black border-2 border-black px-4 py-2 bg-yellow-100"
-                style={{ fontFamily: "'Space Mono', monospace" }}
+              <Link
+                to="/profile"
+                className="flex items-center justify-center w-10 h-10 border-2 border-black bg-white hover:bg-black hover:text-yellow-300 text-black transition-colors shadow-[3px_3px_0px_#000] hover:shadow-none hover:translate-x-[3px] hover:translate-y-[3px]"
+                title="Profile"
               >
-                👋 {user?.email}
-              </span>
+                <FaUserCircle size={22} />
+              </Link>
               <button
                 onClick={handleLogout}
                 className="text-sm font-black uppercase border-2 border-black px-4 py-2 bg-red-500 text-white hover:bg-black hover:text-red-400 transition-colors shadow-[3px_3px_0px_#000] hover:shadow-none hover:translate-x-[3px] hover:translate-y-[3px] cursor-pointer"
@@ -144,12 +146,14 @@ export default function Navbar() {
           {/* Mobile Auth Buttons */}
           {isAuthenticated ? (
             <>
-              <span
-                className="text-sm font-black uppercase text-black border-b-2 border-black px-6 py-4 bg-yellow-100"
+              <Link
+                to="/profile"
+                onClick={() => setMenuOpen(false)}
+                className="text-sm font-black uppercase text-black border-b-2 border-black px-6 py-4 bg-white hover:bg-black hover:text-yellow-300 transition-colors flex items-center gap-2"
                 style={{ fontFamily: "'Space Mono', monospace" }}
               >
-                👋 {user?.email}
-              </span>
+                <FaUserCircle size={18} /> Profile
+              </Link>
               <button
                 onClick={() => { handleLogout(); setMenuOpen(false); }}
                 className="text-sm font-black uppercase text-white px-6 py-4 bg-red-500 hover:bg-black hover:text-red-400 transition-colors text-left cursor-pointer"
