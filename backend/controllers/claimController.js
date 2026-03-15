@@ -3,6 +3,7 @@ const Claim = require("../models/claimModel");
 const Item = require("../models/itemModel");
 
 const isValidObjectId = (id) => mongoose.Types.ObjectId.isValid(id);
+const { notifyUser } = require("../utils/socket");
 
 const isAdmin = (user) => user && user.role === "admin";
 
@@ -35,6 +36,24 @@ exports.createClaim = async (req, res) => {
       return res.status(404).json({ message: "Item not found" });
     }
 
+    // cannot claim an item you posted yourself
+    if (
+      req.user &&
+      existingItem.user &&
+      existingItem.user.toString() === req.user._id.toString()
+    ) {
+      return res
+        .status(400)
+        .json({ message: "You cannot claim your own item" });
+    }
+
+    // prevent new claims if the item has already been claimed or resolved
+    if (existingItem.status && existingItem.status !== "open") {
+      return res
+        .status(400)
+        .json({ message: `Item is not open for claims (status: ${existingItem.status})` });
+    }
+
     const duplicateClaim = await Claim.findOne({
       item,
       claimer: req.user && req.user._id,
@@ -50,7 +69,23 @@ exports.createClaim = async (req, res) => {
       item,
       claimer: req.user && req.user._id,
       proofDescription,
+      // status defaults to pending via schema, but set explicitly for clarity
+      status: "pending",
     });
+
+    // notify the item owner that a new claim is awaiting verification
+    try {
+      const io = req.app.get("io");
+      if (io && existingItem.user) {
+        notifyUser(io, existingItem.user.toString(), "claimPending", {
+          claimId: claim._id,
+          itemId: item,
+          claimer: claim.claimer,
+        });
+      }
+    } catch (err) {
+      console.error("Socket notification error (new claim):", err);
+    }
 
     return res.status(201).json(claim);
   } catch (error) {
@@ -124,12 +159,34 @@ exports.updateClaimStatus = async (req, res) => {
         .json({ message: "Not authorized to update this claim" });
     }
 
+    // if approving, ensure item is still open before persisting anything
+    if (status === "approved" && item) {
+      if (item.status && item.status !== "open") {
+        return res
+          .status(400)
+          .json({ message: `Item already ${item.status}, cannot approve another claim` });
+      }
+
+      // update item first so we don't leave claim in approved state if item update fails
+      item.status = "claimed";
+      await item.save();
+    }
+
     claim.status = status;
     await claim.save();
 
-    if (status === "approved" && item) {
-      item.status = "claimed";
-      await item.save();
+    // notify claimer about status change
+    try {
+      const io = req.app.get("io");
+      if (io && claim.claimer) {
+        notifyUser(io, claim.claimer.toString(), "claimStatus", {
+          claimId: claim._id,
+          status: claim.status,
+          itemId: item ? item._id : undefined,
+        });
+      }
+    } catch (err) {
+      console.error("Socket notification error (status update):", err);
     }
 
     return res.json(claim);
